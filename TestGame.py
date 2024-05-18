@@ -269,15 +269,15 @@ def main():
             led_green_right.duty_cycle = grn_right_level
             
             if keyPress == "right":
-                ship.rotate(5)
+                ship.rotate(8)
                 grn_right_level = 65535
 
             if keyPress == "left":
-                ship.rotate(-5)
+                ship.rotate(-8)
                 grn_left_level = 65535
 
             if keyPress == "top" and acceleration < 2:
-                acceleration+=0.5
+                acceleration+=4
 
             if keyPress == "bottom" and acceleration > -2:
                 acceleration-=1
