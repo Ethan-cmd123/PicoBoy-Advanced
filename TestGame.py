@@ -224,10 +224,8 @@ def main():
         bBTN.pull = digitalio.Pull.UP
         
         keyPress = None
-        
         shooting = False
         
-        isThereABullet = False
         bullets=[]
         while True:
             if not leftBTN.value:
@@ -241,14 +239,9 @@ def main():
             if not aBTN.value:
                 keyPress = "a"
                 #print("a")
-            if not bBTN.value:
-                keyPress = "b"
+            #if not bBTN.value:
+            #    keyPress = "b"
                 #print("b")
-#             x_axis = x_axis_pin.value
-#             y_axis = y_axis_pin.value
-#             # print((x_axis,y_axis))
-#             x_value = x_axis / 65535 * 64
-#             y_value = y_axis / 65535 * 64
 
             red_left_level -= 1024*4
             if red_left_level <= 0:
@@ -284,23 +277,24 @@ def main():
             if acceleration > 0.5:
                 acceleration -= 0.05
             
-            if keyPress == "b" and shooting == False:
-                #print("shoot")
+            if not bBTN.value and shooting == False:
+                print("shoot")
                 red_left_level = 65535
     
                 red_right_level = 65535
                 a.play(wav)
 
                 
-                bullet=Bullet(x=int(ship.x), y=int(ship.y), screen=splash)
-                bullet.rotation=ship.rotation
+                bullet = Bullet(x=int(ship.x), y=int(ship.y), screen=splash)
+                bullet.rotation = ship.rotation
                 bullet.accelerate(3, float(ship.shape.rotation))
                 bullets.append(bullet)
-                shooting=True
+                shooting = True
                 
-            print(keyPress)
-            if keyPress != "b":
+            if bBTN.value and shooting:
+                print("NoShoot")
                 shooting = False
+                
             for bullet in bullets:
                 bullet.updatePosition()
                 if int(bullet.x) < 0 or int(bullet.x) > 127 or int(bullet.y) < 0 or int(bullet.y) > 63:
@@ -330,15 +324,9 @@ def main():
                 rok = Rok(x=[32,96][random.randint(0,1)], y=[16,32,48][random.randint(0,2)], initva=4, screen=splash)
                 roks.append(rok)
                 rok.accelerate(1+score/2, -130)
-            #mainloop
-            #ship.rotate(3)
-            #ship.accelerate(1)
-            #ship.rotate(3)
-            #ship.accelerate(1)
+            
             ship.accelerate(acceleration)
             
-            
-
     
             ship.updatePosition()
             shipCollision=False
