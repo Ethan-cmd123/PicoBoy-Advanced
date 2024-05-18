@@ -4,7 +4,7 @@ import audiopwmio
 import digitalio
 import pwmio
 
-data = open("sfx_movement_jump1.wav", "rb")
+data = open("sounds/sfx_movement_jump1.wav", "rb")
 wav = audiocore.WaveFile(data)
 a = audiopwmio.PWMAudioOut(board.GP11)
 

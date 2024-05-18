@@ -143,7 +143,7 @@ color_palette[0] = 0xFFFFFF  # White
 
 roks=[]
 
-data = open("sfx_movement_jump1.wav", "rb")
+data = open("sounds/sfx_movement_jump1.wav", "rb")
 wav = audiocore.WaveFile(data)
 a = audiopwmio.PWMAudioOut(board.GP9)
 
