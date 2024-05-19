@@ -37,6 +37,11 @@ import audiopwmio
 
 display=None
 
+FPS_DELAY = 1/30 # 50FPS
+
+## Disable garbage collection, make sure to gc.collect() often!
+#gc.disable()
+
 x_axis_pin = analogio.AnalogIn(board.A0)
 y_axis_pin = analogio.AnalogIn(board.A1)
 
@@ -172,35 +177,35 @@ def main():
         led_green_left = pwmio.PWMOut(board.GP11)
         led_green_right = pwmio.PWMOut(board.GP12)
         
-        leftBTNpin = board.GP3
-        leftBTN = digitalio.DigitalInOut(leftBTNpin)
-        leftBTN.direction = digitalio.Direction.INPUT
-        leftBTN.pull = digitalio.Pull.UP
+        btnLeftpin = board.GP3
+        btnLeft = digitalio.DigitalInOut(btnLeftpin)
+        btnLeft.direction = digitalio.Direction.INPUT
+        btnLeft.pull = digitalio.Pull.UP
         
-        rightBTNpin = board.GP6
-        rightBTN = digitalio.DigitalInOut(rightBTNpin)
-        rightBTN.direction = digitalio.Direction.INPUT
-        rightBTN.pull = digitalio.Pull.UP
+        btnRightpin = board.GP6
+        btnRight = digitalio.DigitalInOut(btnRightpin)
+        btnRight.direction = digitalio.Direction.INPUT
+        btnRight.pull = digitalio.Pull.UP
         
-        topBTNpin = board.GP7
-        topBTN = digitalio.DigitalInOut(topBTNpin)
-        topBTN.direction = digitalio.Direction.INPUT
-        topBTN.pull = digitalio.Pull.UP
+        btnUppin = board.GP7
+        btnUp = digitalio.DigitalInOut(btnUppin)
+        btnUp.direction = digitalio.Direction.INPUT
+        btnUp.pull = digitalio.Pull.UP
         
-        bottomBTNpin = board.GP8
-        bottomBTN = digitalio.DigitalInOut(bottomBTNpin)
-        bottomBTN.direction = digitalio.Direction.INPUT
-        bottomBTN.pull = digitalio.Pull.UP
+        btnDownpin = board.GP8
+        btnDown = digitalio.DigitalInOut(btnDownpin)
+        btnDown.direction = digitalio.Direction.INPUT
+        btnDown.pull = digitalio.Pull.UP
         
-        aBTNpin = board.GP15
-        aBTN = digitalio.DigitalInOut(aBTNpin)
-        aBTN.direction = digitalio.Direction.INPUT
-        aBTN.pull = digitalio.Pull.UP
+        btnApin = board.GP15
+        btnA = digitalio.DigitalInOut(btnApin)
+        btnA.direction = digitalio.Direction.INPUT
+        btnA.pull = digitalio.Pull.UP
         
-        bBTNpin = board.GP14
-        bBTN = digitalio.DigitalInOut(bBTNpin)
-        bBTN.direction = digitalio.Direction.INPUT
-        bBTN.pull = digitalio.Pull.UP
+        btnBpin = board.GP14
+        btnB = digitalio.DigitalInOut(btnBpin)
+        btnB.direction = digitalio.Direction.INPUT
+        btnB.pull = digitalio.Pull.UP
         
         while True:
             # Draw a label
@@ -233,29 +238,20 @@ def main():
             
             acceleration = 0
             
+            last_update_time = time.monotonic()
                         
             keyPress = None
             shooting = False
             
             bullets=[]
             while True:
-                if not leftBTN.value:
-                    keyPress = "left"
-                if not rightBTN.value:
-                    keyPress = "right"
-                if not topBTN.value:
-                    keyPress = "top"
-                if not bottomBTN.value:
-                    keyPress = "bottom"
-                if not aBTN.value and gameOver:
-                    keyPress = "a"
-
-
-                    #print("a")
-                #if not bBTN.value:
-                #    keyPress = "b"
-                    #print("b")
-
+                keyPressLeft = not btnLeft.value
+                keyPressRight = not btnRight.value
+                keyPressUp = not btnUp.value
+                keyPressDown = not btnDown.value
+                keyPressA = not btnA.value
+                keyPressB = not btnB.value
+                   
                 red_left_level -= 1024*4
                 if red_left_level <= 0:
                     red_left_level = 0
@@ -274,23 +270,23 @@ def main():
                 led_green_left.duty_cycle = grn_left_level
                 led_green_right.duty_cycle = grn_right_level
                 
-                if keyPress == "right":
+                if keyPressRight:
                     ship.rotate(8)
                     grn_right_level = 65535
 
-                if keyPress == "left":
+                if keyPressLeft:
                     ship.rotate(-8)
                     grn_left_level = 65535
 
-                if keyPress == "top" and acceleration < 2:
+                if keyPressUp and acceleration < 2:
                     acceleration+=4
 
-                if keyPress == "bottom" and acceleration > -2:
+                if keyPressDown and acceleration > -2:
                     acceleration-=1
                 if acceleration > 0.5:
                     acceleration -= 0.05
                 
-                if not bBTN.value and shooting == False:
+                if keyPressB and shooting == False and not gameOver:
                     print("shoot")
                     red_left_level = 65535
         
@@ -304,7 +300,7 @@ def main():
                     bullets.append(bullet)
                     shooting = True
                     
-                if bBTN.value and shooting:
+                if not keyPressB and shooting:
                     print("NoShoot")
                     shooting = False
                     
@@ -341,19 +337,19 @@ def main():
                     rok.accelerate(1+score/2, -130)
                 
                 ship.accelerate(acceleration)
-                
-        
                 ship.updatePosition()
+                
                 shipCollision=False
                 for rok in roks:
                     rok.updatePosition()
                     rok.screenWrap()
                     if ship.collidesWith(rok):
+                        audio.stop()
                         gameOver = True
                         ship.x,ship.y=400, 400
                         #splash.remove(ship)
                 if gameOver:
-                    if keyPress == "a":
+                    if keyPressA:
                         print(splash)
                         gameOver=False
                         score_text.text = ""
@@ -376,8 +372,15 @@ def main():
                      
                     score_text.text = "GAME OVER"    
                             
-                time.sleep(0.02)
-                gc.collect()
+                now = time.monotonic()
+                # see if we should wait to render the next frame.
+                ## if we have spare time, run garbage collection
+                #if now < last_update_time + FPS_DELAY:
+                #    gc.collect()
+                #    now = time.monotonic()
+                while now <= last_update_time + FPS_DELAY:
+                    now = time.monotonic()
+                last_update_time = time.monotonic()
     
 try:
     main()
