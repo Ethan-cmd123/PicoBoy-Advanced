@@ -145,12 +145,12 @@ color_palette = displayio.Palette(1)
 color_palette[0] = 0xFFFFFF  # White
 
 roks=[]
-data = open("sounds/sfx_movement_jump1.wav", "rb")
+sfx_laser_wav = open("sounds/sfx_wpn_laser5.wav", "rb")
 data2 = open("sounds/sfx_sounds_impact6.wav", "rb")
 
-wav = audiocore.WaveFile(data)
+sfx_laser = audiocore.WaveFile(sfx_laser_wav)
 wav2 = audiocore.WaveFile(data2)
-a = audiopwmio.PWMAudioOut(board.GP9)
+audio = audiopwmio.PWMAudioOut(board.GP9)
 
 
 def main():
@@ -295,7 +295,7 @@ def main():
                     red_left_level = 65535
         
                     red_right_level = 65535
-                    a.play(wav)
+                    audio.play(sfx_laser)
 
                     
                     bullet = Bullet(x=int(ship.x), y=int(ship.y), screen=splash)
@@ -318,7 +318,7 @@ def main():
                         for rok in roks:
                             if rok.collidesWith(bullet):
                                 print("ff")
-                                a.play(wav2)
+                                #audio.play(wav2)
                                 if rok.minRadius < 6:
                                     rok.shape.pop()
                                     rok.screen.remove(rok.shape)
