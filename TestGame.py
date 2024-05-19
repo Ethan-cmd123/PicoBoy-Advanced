@@ -26,7 +26,9 @@ from vectorio_helpers import line
 from adafruit_display_shapes.sparkline import Sparkline
 import synthio
 import audiopwmio
+import microcontroller
 
+import supervisor
 
 import pwmio
 
@@ -46,6 +48,7 @@ neopixel_write(neopixel_pin, bytearray([2,2,2]))
 class PhysicsShape:
     def __init__(self, points, x,y, initvx=0.0, initvy=0.0, initva=0.0, vmax=3,screen=None):
         self.shape=rotated_polygon.RotatedPolygon(pixel_shader=color_palette, points=points, x=x, y=y, rotation=0)
+        self.screen=screen
         screen.append(self.shape)
         self.init_x, self.init_y = float(x),float(y)
         self.x, self.y = float(x),float(y)
@@ -144,7 +147,10 @@ color_palette[0] = 0xFFFFFF  # White
 roks=[]
 
 data = open("sfx_movement_jump1.wav", "rb")
+data2 = open("sfx_sounds_impact6.wav", "rb")
+
 wav = audiocore.WaveFile(data)
+wav2 = audiocore.WaveFile(data2)
 a = audiopwmio.PWMAudioOut(board.GP9)
 
 
@@ -161,37 +167,11 @@ def main():
         
         print(display)
         
-       
-        # Draw a label
-        score=0
-        text = "00"+str(score)
-        score_text = label.Label(font, text=text, color=0xFFFF00, x=2, y=4)
-        splash.append(score_text)
-        #rockShape=circle
-        #rock = physicsShape(rockShape)
-        
-        #pew_line = line.Line(points=[(12,12),(24,24)], palette=color_palette, stroke=1)
-        #splash.append(pew_line)
-        
-        #points=[(0, 5), (4, -6), (0,0), (-4, -6)]
-        shippoints=[(0, 5), (4, -6), (0,-3), (-4, -6)]
-        ship = PhysicsShape(shippoints, x=64, y=32, screen=splash)
-        
-        print(ship.bbox())
-        
-        shipCrashed=False
         
         led_red_left = pwmio.PWMOut(board.GP10)
         led_red_right = pwmio.PWMOut(board.GP13)
         led_green_left = pwmio.PWMOut(board.GP11)
         led_green_right = pwmio.PWMOut(board.GP12)
-        red_left_level = 0
-        red_right_level = 0
-        grn_left_level = 0
-        grn_right_level = 0
-        
-        
-        acceleration = 0
         
         leftBTNpin = board.GP3
         leftBTN = digitalio.DigitalInOut(leftBTNpin)
@@ -223,133 +203,182 @@ def main():
         bBTN.direction = digitalio.Direction.INPUT
         bBTN.pull = digitalio.Pull.UP
         
-        keyPress = None
-        shooting = False
-        
-        bullets=[]
         while True:
-            if not leftBTN.value:
-                keyPress = "left"
-            if not rightBTN.value:
-                keyPress = "right"
-            if not topBTN.value:
-                keyPress = "top"
-            if not bottomBTN.value:
-                keyPress = "bottom"
-            if not aBTN.value:
-                keyPress = "a"
-                #print("a")
-            #if not bBTN.value:
-            #    keyPress = "b"
-                #print("b")
+            # Draw a label
+            gameOver=False
 
-            red_left_level -= 1024*4
-            if red_left_level <= 0:
-                red_left_level = 0
-            red_right_level -= 1024*4
-            if red_right_level <= 0:
-                red_right_level = 0
-            grn_left_level -= 1024*4
-            if grn_left_level <= 0:
-                grn_left_level = 0
-            grn_right_level -= 1024*4
-            if grn_right_level <= 0:
-                grn_right_level = 0
-                
-            led_red_left.duty_cycle = red_left_level
-            led_red_right.duty_cycle = red_right_level
-            led_green_left.duty_cycle = grn_left_level
-            led_green_right.duty_cycle = grn_right_level
+            score=0
+            text = "00"+str(score)
+            score_text = label.Label(font, text=text, color=0xFFFF00, x=2, y=4)
+            splash.append(score_text)
+            #rockShape=circle
+            #rock = physicsShape(rockShape)
             
-            if keyPress == "right":
-                ship.rotate(8)
-                grn_right_level = 65535
-
-            if keyPress == "left":
-                ship.rotate(-8)
-                grn_left_level = 65535
-
-            if keyPress == "top" and acceleration < 2:
-                acceleration+=4
-
-            if keyPress == "bottom" and acceleration > -2:
-                acceleration-=1
-            if acceleration > 0.5:
-                acceleration -= 0.05
+            #pew_line = line.Line(points=[(12,12),(24,24)], palette=color_palette, stroke=1)
+            #splash.append(pew_line)
             
-            if not bBTN.value and shooting == False:
-                print("shoot")
-                red_left_level = 65535
-    
-                red_right_level = 65535
-                a.play(wav)
-
-                
-                bullet = Bullet(x=int(ship.x), y=int(ship.y), screen=splash)
-                bullet.rotation = ship.rotation
-                bullet.accelerate(3, float(ship.shape.rotation))
-                bullets.append(bullet)
-                shooting = True
-                
-            if bBTN.value and shooting:
-                print("NoShoot")
-                shooting = False
-                
-            for bullet in bullets:
-                bullet.updatePosition()
-                if int(bullet.x) < 0 or int(bullet.x) > 127 or int(bullet.y) < 0 or int(bullet.y) > 63:
-                    bullet.shape.pop()
-                    bullet.screen.remove(bullet.shape)
-                    bullets.remove(bullet)
-                else:
-                    for rok in roks:
-                        if rok.collidesWith(bullet):
-                            print("ff")
-                            if rok.minRadius < 6:
-                                rok.shape.pop()
-                                rok.screen.remove(rok.shape)
-                                roks.remove(rok)
-                            else:
-                                rok.smash(bullet.vx/2, bullet.vy/2)
-
-                            score += 1
-                            score_text.text = "00" + str(score)
-                            print(rok.minRadius)
-
-            ship.screenWrap()
+            #points=[(0, 5), (4, -6), (0,0), (-4, -6)]
+            shippoints=[(0, 5), (4, -6), (0,-3), (-4, -6)]
+            ship = PhysicsShape(shippoints, x=64, y=32, screen=splash)
+            
+            print(ship.bbox())
+            
+            shipCrashed=False
+            
+            
+            red_left_level = 0
+            red_right_level = 0
+            grn_left_level = 0
+            grn_right_level = 0
+            
+            
+            acceleration = 0
+            
                         
-            #print(x_value, y_value)
+            keyPress = None
+            shooting = False
             
-            if len(roks) == 0:
-                rok = Rok(x=[32,96][random.randint(0,1)], y=[16,32,48][random.randint(0,2)], initva=4, screen=splash)
-                roks.append(rok)
-                rok.accelerate(1+score/2, -130)
-            
-            ship.accelerate(acceleration)
-            
-    
-            ship.updatePosition()
-            shipCollision=False
-            for rok in roks:
-                rok.updatePosition()
-                rok.screenWrap()
-                if ship.collidesWith(rok):
-                    while True:
-                        score_text.text = "GAME OVER"
-                        time.sleep(0.7)
+            bullets=[]
+            while True:
+                if not leftBTN.value:
+                    keyPress = "left"
+                if not rightBTN.value:
+                    keyPress = "right"
+                if not topBTN.value:
+                    keyPress = "top"
+                if not bottomBTN.value:
+                    keyPress = "bottom"
+                if not aBTN.value and gameOver:
+                    keyPress = "a"
+
+
+                    #print("a")
+                #if not bBTN.value:
+                #    keyPress = "b"
+                    #print("b")
+
+                red_left_level -= 1024*4
+                if red_left_level <= 0:
+                    red_left_level = 0
+                red_right_level -= 1024*4
+                if red_right_level <= 0:
+                    red_right_level = 0
+                grn_left_level -= 1024*4
+                if grn_left_level <= 0:
+                    grn_left_level = 0
+                grn_right_level -= 1024*4
+                if grn_right_level <= 0:
+                    grn_right_level = 0
+                    
+                led_red_left.duty_cycle = red_left_level
+                led_red_right.duty_cycle = red_right_level
+                led_green_left.duty_cycle = grn_left_level
+                led_green_right.duty_cycle = grn_right_level
+                
+                if keyPress == "right":
+                    ship.rotate(8)
+                    grn_right_level = 65535
+
+                if keyPress == "left":
+                    ship.rotate(-8)
+                    grn_left_level = 65535
+
+                if keyPress == "top" and acceleration < 2:
+                    acceleration+=4
+
+                if keyPress == "bottom" and acceleration > -2:
+                    acceleration-=1
+                if acceleration > 0.5:
+                    acceleration -= 0.05
+                
+                if not bBTN.value and shooting == False:
+                    print("shoot")
+                    red_left_level = 65535
+        
+                    red_right_level = 65535
+                    a.play(wav)
+
+                    
+                    bullet = Bullet(x=int(ship.x), y=int(ship.y), screen=splash)
+                    bullet.rotation = ship.rotation
+                    bullet.accelerate(3, float(ship.shape.rotation))
+                    bullets.append(bullet)
+                    shooting = True
+                    
+                if bBTN.value and shooting:
+                    print("NoShoot")
+                    shooting = False
+                    
+                for bullet in bullets:
+                    bullet.updatePosition()
+                    if int(bullet.x) < 0 or int(bullet.x) > 127 or int(bullet.y) < 0 or int(bullet.y) > 63:
+                        bullet.shape.pop()
+                        bullet.screen.remove(bullet.shape)
+                        bullets.remove(bullet)
+                    else:
+                        for rok in roks:
+                            if rok.collidesWith(bullet):
+                                print("ff")
+                                a.play(wav2)
+                                if rok.minRadius < 6:
+                                    rok.shape.pop()
+                                    rok.screen.remove(rok.shape)
+                                    roks.remove(rok)
+                                else:
+                                    rok.smash(bullet.vx/2, bullet.vy/2)
+
+                                score += 1
+                                score_text.text = "00" + str(score)
+                                print(rok.minRadius)
+                
+                if not gameOver:
+                    ship.screenWrap()
+                            
+                #print(x_value, y_value)
+                
+                if len(roks) == 0:
+                    rok = Rok(x=[32,96][random.randint(0,1)], y=[16,32,48][random.randint(0,2)], initva=4, screen=splash)
+                    roks.append(rok)
+                    rok.accelerate(1+score/2, -130)
+                
+                ship.accelerate(acceleration)
+                
+        
+                ship.updatePosition()
+                shipCollision=False
+                for rok in roks:
+                    rok.updatePosition()
+                    rok.screenWrap()
+                    if ship.collidesWith(rok):
+                        gameOver = True
+                        ship.x,ship.y=400, 400
+                        #splash.remove(ship)
+                if gameOver:
+                    if keyPress == "a":
+                        print(splash)
+                        gameOver=False
                         score_text.text = ""
-                        time.sleep(0.7)
-
-                        gc.collect()
-#                     shipCollision=True
-#                     if not shipCrashed:
-#                         shipCrashed=True
-#                         rok.smash(ship.vx, ship.vy)
-#             if not shipCollision:
-#                 shipCrashed=False
                         
-            time.sleep(0.02)
-            gc.collect()
+                        
+                        rok.shape.pop()
+                        rok.screen.remove(rok.shape)
+                        roks.remove(rok)
+                        
+                        ship.shape.pop()
+                        ship.screen.remove(ship.shape)
+                        
+                        for bullet in bullets:
+                            bullet.shape.pop()
+                            bullet.screen.remove(bullet.shape)
+                            bullets.remove(bullet)
+                        break
+                    
+                    
+                     
+                    score_text.text = "GAME OVER"    
+                            
+                time.sleep(0.02)
+                gc.collect()
     
 try:
     main()
