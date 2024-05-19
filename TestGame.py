@@ -148,7 +148,7 @@ roks=[]
 sfx_laser_wav = open("sounds/sfx_wpn_laser5.wav", "rb")
 data2 = open("sounds/sfx_sounds_impact6.wav", "rb")
 
-sfx_laser = audiocore.WaveFile(sfx_laser_wav)
+sfx_laser = audiocore.WaveFile(sfx_laser_wav, bytearray(1024))
 wav2 = audiocore.WaveFile(data2)
 audio = audiopwmio.PWMAudioOut(board.GP9)
 
