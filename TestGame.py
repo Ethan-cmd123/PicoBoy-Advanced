@@ -145,9 +145,8 @@ color_palette = displayio.Palette(1)
 color_palette[0] = 0xFFFFFF  # White
 
 roks=[]
-
-data = open("sfx_movement_jump1.wav", "rb")
-data2 = open("sfx_sounds_impact6.wav", "rb")
+data = open("sounds/sfx_movement_jump1.wav", "rb")
+data2 = open("sounds/sfx_sounds_impact6.wav", "rb")
 
 wav = audiocore.WaveFile(data)
 wav2 = audiocore.WaveFile(data2)

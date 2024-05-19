@@ -29,7 +29,7 @@ neopixel_pin.direction = digitalio.Direction.OUTPUT
 neopixel_write(neopixel_pin, bytearray([2,2,2]))
 
 def main():
-    data = open("sfx_sounds_impact6.wav", "rb")
+    data = open("sounds/sfx_sounds_impact6.wav", "rb")
     wav = audiocore.WaveFile(data)
     print(wav.sample_rate)
     audio = audiopwmio.PWMAudioOut(board.GP9)
