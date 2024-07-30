@@ -20,10 +20,7 @@ from vectorio_helpers import rotated_polygon
 from vectorio_helpers import line
 
 from adafruit_display_shapes.sparkline import Sparkline
-import synthio
-import microcontroller
 
-import supervisor
 
 import pwmio
 
