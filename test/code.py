@@ -1,22 +1,36 @@
 import board
-import gc
 import time
 import random
 import busio
 import digitalio
-import displayio
 import board
-import synthio
-import audiopwmio
-
-
 import pwmio
-
 import audiocore
 import audiopwmio
 
-from picoboygame import audio, neopixel
 
+class _Audio:
+    last_audio = None
+
+    def __init__(self, speaker_pin):
+        self.muted = True
+        self.buffer = bytearray(1024)
+        self.audio = audiopwmio.PWMAudioOut(speaker_pin)
+
+    def play(self, audio_file, loop=False):
+        if self.muted:
+            return
+        self.stop()
+        wave = audiocore.WaveFile(audio_file, self.buffer)
+        self.audio.play(wave, loop=loop)
+
+    def stop(self):
+        self.audio.stop()
+
+    def mute(self, value=True):
+        self.muted = value
+       
+audio = _Audio(board.SPEAKER)
 audio.mute(False)
 
 
@@ -24,12 +38,6 @@ sfx_laser = open("sounds/sfx_wpn_laser5.wav", "rb")
 data2 = open("sounds/sfx_sounds_impact6.wav", "rb")
 
 print("Test Script")
-
-
-
-
-
-
 
 ledMaxBrightness = 65535
 
@@ -100,10 +108,10 @@ btnB = digitalio.DigitalInOut(btnBpin)
 btnB.direction = digitalio.Direction.INPUT
 btnB.pull = digitalio.Pull.UP
 
-
-
-
-
+btnHomepin = board.GP2
+btnHome = digitalio.DigitalInOut(btnHomepin)
+btnHome.direction = digitalio.Direction.INPUT
+btnHome.pull = digitalio.Pull.UP
 
 while True:
     keyPressLeft = not btnLeft.value
@@ -112,6 +120,7 @@ while True:
     keyPressDown = not btnDown.value
     keyPressA = not btnA.value
     keyPressB = not btnB.value
+    keyPressHome = not btnHome.value
     if currentTest == 0:
 
 
@@ -170,7 +179,7 @@ while True:
         time.sleep(0.8)
         currentTest +=1
     
-    if keyPressLeft or keyPressRight or keyPressUp or keyPressDown or keyPressA or keyPressB:
+    if keyPressLeft or keyPressRight or keyPressUp or keyPressDown or keyPressA or keyPressB or keyPressHome:
         audio.play(sfx_laser)
 
     
