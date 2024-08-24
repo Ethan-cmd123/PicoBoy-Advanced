@@ -1,28 +1,12 @@
 # Adapting the example in https://learn.adafruit.com/adafruit-oled-featherwing/python-usage
 # to use with Raspberry Pi Pico and CircuitPython
-import board
-from picoboygame import audio, neopixel
+from picoboygame import *
+
 import time
 import math
 import random
-import digitalio
-from digitalio import DigitalInOut, Direction, Pull
-import displayio
-
-from terminalio import FONT as font
-from adafruit_display_text import label
-#from adafruit_display_shapes.rect import Rect
-#from adafruit_display_shapes.circle import Circle
-#from adafruit_display_shapes.triangle import Triangle
 
 import vectorio
-from vectorio_helpers import rotated_polygon
-from vectorio_helpers import line
-
-from adafruit_display_shapes.sparkline import Sparkline
-
-
-import pwmio
 
 ## Un/mute Game :D
 audio.mute(False)
