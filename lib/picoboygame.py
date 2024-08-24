@@ -6,6 +6,25 @@ import audiopwmio
 import time
 import ledfx
 
+import digitalio
+from digitalio import DigitalInOut, Direction, Pull
+import displayio
+
+from terminalio import FONT as font
+from adafruit_display_text import label
+#from adafruit_display_shapes.rect import Rect
+#from adafruit_display_shapes.circle import Circle
+#from adafruit_display_shapes.triangle import Triangle
+
+import vectorio
+from vectorio_helpers import rotated_polygon
+from vectorio_helpers import line
+
+from adafruit_display_shapes.sparkline import Sparkline
+
+
+import pwmio
+
 MAX_LED_BRIGHTNESS = 65535
 LED_BRIGHTNESS_CORRECTION = 1.4
 
@@ -39,6 +58,9 @@ class _Audio:
 
     def stop(self):
         self.audio.stop()
+        
+    def playing(self):
+        self.audio.playing
 
     def mute(self, value=True):
         self.muted = value
