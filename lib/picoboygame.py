@@ -66,60 +66,68 @@ class _Audio:
         self.muted = value
 
 class _Buttons:
-    def __init__(self):
-        self.btnLeftpin = board.BUTTON_LEFT
-        self.btnLeft = digitalio.DigitalInOut(btnLeftpin)
-        self.btnLeft.direction = digitalio.Direction.INPUT
-        self.btnLeft.pull = digitalio.Pull.UP
+    def updateButton():
+        global btnLeft, btnRight, btnUp, btnDown,btnA, btnB
+        
+        btnLeft = None
+        btnRight = None
+        btnUp = None
+        btnDown = None
+        btnA = None
+        btnB = None
 
-        self.btnRightpin = board.BUTTON_RIGHT
-        self.btnRight = digitalio.DigitalInOut(btnRightpin)
-        self.btnRight.direction = digitalio.Direction.INPUT
-        self.btnRight.pull = digitalio.Pull.UP
+        
+        btnLeftpin = board.BUTTON_LEFT
+        btnLeft = digitalio.DigitalInOut(btnLeftpin)
+        btnLeft.direction = digitalio.Direction.INPUT
+        btnLeft.pull = digitalio.Pull.UP
 
-        self.btnUppin = board.BUTTON_UP
-        self.btnUp = digitalio.DigitalInOut(btnUppin)
-        self.btnUp.direction = digitalio.Direction.INPUT
-        self.btnUp.pull = digitalio.Pull.UP
+        btnRightpin = board.BUTTON_RIGHT
+        btnRight = digitalio.DigitalInOut(btnRightpin)
+        btnRight.direction = digitalio.Direction.INPUT
+        btnRight.pull = digitalio.Pull.UP
 
-        self.btnDownpin = board.BUTTON_DOWN
-        self.btnDown = digitalio.DigitalInOut(btnDownpin)
-        self.btnDown.direction = digitalio.Direction.INPUT
-        self.btnDown.pull = digitalio.Pull.UP
+        btnUppin = board.BUTTON_UP
+        btnUp = digitalio.DigitalInOut(btnUppin)
+        btnUp.direction = digitalio.Direction.INPUT
+        btnUp.pull = digitalio.Pull.UP
 
-        self.btnApin = board.BUTTON_X
-        self.btnA = digitalio.DigitalInOut(btnApin)
-        self.btnA.direction = digitalio.Direction.INPUT
-        self.btnA.pull = digitalio.Pull.UP
+        btnDownpin = board.BUTTON_DOWN
+        btnDown = digitalio.DigitalInOut(btnDownpin)
+        btnDown.direction = digitalio.Direction.INPUT
+        btnDown.pull = digitalio.Pull.UP
 
-        self.btnBpin = board.BUTTON_O
-        self.btnB = digitalio.DigitalInOut(btnBpin)
-        self.btnB.direction = digitalio.Direction.INPUT
-        self.btnB.pull = digitalio.Pull.UP
+        btnApin = board.BUTTON_X
+        btnA = digitalio.DigitalInOut(btnApin)
+        btnA.direction = digitalio.Direction.INPUT
+        btnA.pull = digitalio.Pull.UP
 
-        keyPress = None
-    def getKeyPress():
+        btnBpin = board.BUTTON_O
+        btnB = digitalio.DigitalInOut(btnBpin)
+        btnB.direction = digitalio.Direction.INPUT
+        btnB.pull = digitalio.Pull.UP
+    def getKeyPress(PromptedKey):
                 
         
-        keyPressLeft = not self.btnLeft.value
-        keyPressRight = not self.btnRight.value
-        keyPressUp = not self.btnUp.value
-        keyPressDown = not self.btnDown.value
-        keyPressA = not self.btnA.value
-        keyPressB = not self.btnB.value
+        keyPressLeft = not btnLeft.value
+        keyPressRight = not btnRight.value
+        keyPressUp = not btnUp.value
+        keyPressDown = not btnDown.value
+        keyPressA = not btnA.value
+        keyPressB = not btnB.value
         
-        if keyPressLeft:
-            keyPress = "Left"
-        if keyPressRight:
-            keyPress = "Right"   
-        if keyPressUp:
-            keyPress = "Up"
-        if keyPressDown:
-            keyPress = "Down"
-        else:
-            keyPress = None
-        
-        return keyPress
+        if PromptedKey == "Left":
+            return keyPressLeft
+        if PromptedKey == "Right":
+            return keyPressRight
+        if PromptedKey == "Up":
+            return keyPressUp
+        if PromptedKey == "Down":
+            return keyPressDown
+        if PromptedKey == "A":
+            return keyPressA
+        if PromptedKey == "B":
+            return keyPressB
 '''
 class _LEDS:
     def __init__(self):

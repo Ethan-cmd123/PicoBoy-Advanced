@@ -121,44 +121,33 @@ def creatBullet(size):
     return [(0,1),(2,0),(0,4)]
 
 roks=[]
+
+
+
+
+
 sfx_laser = open("sounds/sfx_wpn_laser5.wav", "rb")
 data2 = open("sounds/sfx_sounds_impact6.wav", "rb")
 
-btnLeftpin = board.BUTTON_LEFT
-btnLeft = digitalio.DigitalInOut(btnLeftpin)
-btnLeft.direction = digitalio.Direction.INPUT
-btnLeft.pull = digitalio.Pull.UP
 
-btnRightpin = board.BUTTON_RIGHT
-btnRight = digitalio.DigitalInOut(btnRightpin)
-btnRight.direction = digitalio.Direction.INPUT
-btnRight.pull = digitalio.Pull.UP
 
-btnUppin = board.BUTTON_UP
-btnUp = digitalio.DigitalInOut(btnUppin)
-btnUp.direction = digitalio.Direction.INPUT
-btnUp.pull = digitalio.Pull.UP
 
-btnDownpin = board.BUTTON_DOWN
-btnDown = digitalio.DigitalInOut(btnDownpin)
-btnDown.direction = digitalio.Direction.INPUT
-btnDown.pull = digitalio.Pull.UP
-
-btnApin = board.BUTTON_X
-btnA = digitalio.DigitalInOut(btnApin)
-btnA.direction = digitalio.Direction.INPUT
-btnA.pull = digitalio.Pull.UP
-
-btnBpin = board.BUTTON_O
-btnB = digitalio.DigitalInOut(btnBpin)
-btnB.direction = digitalio.Direction.INPUT
-btnB.pull = digitalio.Pull.UP
 
 
 led_red_left = pwmio.PWMOut(board.LED_RED_LEFT)
 led_red_right = pwmio.PWMOut(board.LED_RED_RIGHT)
 led_green_left = pwmio.PWMOut(board.LED_GREEN_LEFT)
 led_green_right = pwmio.PWMOut(board.LED_GREEN_RIGHT)
+
+
+
+
+button.updateButton()
+
+
+
+
+
 
 while True:
     # Draw a label
@@ -195,16 +184,9 @@ while True:
                 
     keyPress = None
     shooting = False
-    
+
     bullets=[]
     while True:
-        keyPressLeft = not btnLeft.value
-        keyPressRight = not btnRight.value
-        keyPressUp = not btnUp.value
-        keyPressDown = not btnDown.value
-        keyPressA = not btnA.value
-        keyPressB = not btnB.value
-           
         red_left_level -= 1024*4
         if red_left_level <= 0:
             red_left_level = 0
@@ -223,23 +205,23 @@ while True:
         led_green_left.duty_cycle = grn_left_level
         led_green_right.duty_cycle = grn_right_level
         
-        if keyPressRight:
+        if button.getKeyPress("Right"):
             ship.rotate(8)
             grn_right_level = 65535
 
-        if keyPressLeft:
+        if button.getKeyPress("Left"):
             ship.rotate(-8)
             grn_left_level = 65535
 
-        if keyPressUp and acceleration < 2:
+        if button.getKeyPress("Up") and acceleration < 2:
             acceleration+=4
 
-        if keyPressDown and acceleration > -2:
+        if button.getKeyPress("Down") and acceleration > -2:
             acceleration-=1
         if acceleration > 0.5:
             acceleration -= 0.05
         
-        if keyPressB and shooting == False and not gameOver:
+        if button.getKeyPress("B") and shooting == False and not gameOver:
             print("shoot")
             red_left_level = 65535
 
@@ -253,7 +235,7 @@ while True:
             bullets.append(bullet)
             shooting = True
             
-        if not keyPressB and shooting:
+        if not button.getKeyPress("B") and shooting:
             print("NoShoot")
             shooting = False
             
@@ -302,7 +284,7 @@ while True:
                 ship.x,ship.y=400, 400
                 #splash.remove(ship)
         if gameOver:
-            if keyPressA:
+            if button.getKeyPress("A"):
                 print(splash)
                 gameOver=False
                 score_text.text = ""
