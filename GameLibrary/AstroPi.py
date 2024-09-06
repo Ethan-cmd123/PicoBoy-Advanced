@@ -25,48 +25,7 @@ color_palette[0] = 0xFFFFFF  # White
 FPS_DELAY = 1/30 # 50FPS
 
 
-class Rok(PhysicsShape):
-    def __init__(self,x,y, minRadius=11,maxRadius=15, initvx=0.0, initvy=0.0, initva=0.0, vmax=3,screen=None):
-        points=generateAstroidPoly(minRadius, maxRadius)
-        super().__init__(points, x,y, initvx, initvy, initva, vmax,screen)
-        self.screen=screen
-        self.minRadius=minRadius
-        self.maxRadius=maxRadius
-    def smash(self, impact_vx, impact_vy):
-        if self.minRadius//2 > 1:
-            new_va = self.va + random.randint(0,2)
-            roks.append(Rok(int(self.x), int(self.y), minRadius=self.minRadius//2,maxRadius=self.maxRadius//2, initvx=impact_vx+self.vx, initvy=impact_vy-self.vy, initva=new_va, screen=self.screen))
-            new_va = self.va - random.randint(0,2)
-            roks.append(Rok(int(self.x), int(self.y), minRadius=self.minRadius//2,maxRadius=self.maxRadius//2, initvx=impact_vx+self.vx, initvy=impact_vy-self.vy, initva=new_va, screen=self.screen))
-        self.annihilated()
-    def annihilated(self):
-        self.shape.pop()
-        self.screen.remove(self.shape)
-        roks.remove(self)
-def generateAstroidPoly(minRadius, maxRadius, segments=8):
-    seg=[random.random() for _ in range(segments)]
-    seg.sort()
-    return [pointOnCircle(_,random.randint(minRadius,maxRadius)) for _ in seg]
-    
-
-def pointOnCircle(angle, radius):
-    x = int(math.cos(2 * math.pi * angle) * radius)
-    y = int(math.sin(2 * math.pi * angle) * radius)
-    return (x,y)
-
-class Bullet(PhysicsShape):
-    def __init__(self,x,y, size=1, initvx=0.0, initvy=0.0, initva=0.0, vmax=3,screen=None):
-        points=creatBullet(size)
-        super().__init__(points, x,y, initvx, initvy, initva,vmax,screen)
-        self.screen=screen
-        self.size=size
-def creatBullet(size):
-    return [(0,1),(2,0),(0,4)]
-
 roks=[]
-
-
-
 
 
 sfx_laser = open("sounds/sfx_wpn_laser5.wav", "rb")
@@ -198,7 +157,7 @@ while True:
                             rok.screen.remove(rok.shape)
                             roks.remove(rok)
                         else:
-                            rok.smash(bullet.vx/2, bullet.vy/2)
+                            rok.smash(bullet.vx/2, bullet.vy/2, roks)
 
                         score += 1
                         score_text.text = "00" + str(score)

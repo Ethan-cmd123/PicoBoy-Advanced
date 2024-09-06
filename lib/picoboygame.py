@@ -15,6 +15,7 @@ from adafruit_display_text import label
 #from adafruit_display_shapes.rect import Rect
 #from adafruit_display_shapes.circle import Circle
 #from adafruit_display_shapes.triangle import Triangle
+import random
 
 import vectorio
 from vectorio_helpers import rotated_polygon
@@ -27,6 +28,7 @@ import pwmio
 
 MAX_LED_BRIGHTNESS = 65535
 LED_BRIGHTNESS_CORRECTION = 1.4
+
 
 
 class PhysicsShape:
@@ -88,6 +90,47 @@ class PhysicsShape:
         self.shape.x=int(self.x - self.init_x)
         self.shape.y=int(self.y - self.init_y)
         
+class Rok(PhysicsShape):
+    roks = []
+    
+    def __init__(self,x,y, minRadius=11,maxRadius=15, initvx=0.0, initvy=0.0, initva=0.0, vmax=3,screen=None):
+        points=generateAstroidPoly(minRadius, maxRadius)
+        super().__init__(points, x,y, initvx, initvy, initva, vmax,screen)
+        self.screen=screen
+        self.minRadius=minRadius
+        self.maxRadius=maxRadius
+    def smash(self, impact_vx, impact_vy, roks):
+        if self.minRadius//2 > 1:
+            new_va = self.va + random.randint(0,2)
+            roks.append(Rok(int(self.x), int(self.y), minRadius=self.minRadius//2,maxRadius=self.maxRadius//2, initvx=impact_vx+self.vx, initvy=impact_vy-self.vy, initva=new_va, screen=self.screen))
+            new_va = self.va - random.randint(0,2)
+            roks.append(Rok(int(self.x), int(self.y), minRadius=self.minRadius//2,maxRadius=self.maxRadius//2, initvx=impact_vx+self.vx, initvy=impact_vy-self.vy, initva=new_va, screen=self.screen))
+        self.annihilated(roks)
+    def annihilated(self, roks):
+        self.shape.pop()
+        self.screen.remove(self.shape)
+        roks.remove(self)
+def generateAstroidPoly(minRadius, maxRadius, segments=8):
+    seg=[random.random() for _ in range(segments)]
+    seg.sort()
+    return [pointOnCircle(_,random.randint(minRadius,maxRadius)) for _ in seg]
+    
+
+def pointOnCircle(angle, radius):
+    x = int(math.cos(2 * math.pi * angle) * radius)
+    y = int(math.sin(2 * math.pi * angle) * radius)
+    return (x,y)
+
+class Bullet(PhysicsShape):
+    def __init__(self,x,y, size=1, initvx=0.0, initvy=0.0, initva=0.0, vmax=3,screen=None):
+        points=createBullet(size)
+        super().__init__(points, x,y, initvx, initvy, initva,vmax,screen)
+        self.screen=screen
+        self.size=size
+def createBullet(size):
+    return [(0,1),(2,0),(0,4)]
+
+
 class _Neopixel:
     def __init__(self, pin):
         self.pin = digitalio.DigitalInOut(pin)
